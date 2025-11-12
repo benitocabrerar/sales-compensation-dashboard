@@ -7,7 +7,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, Users, Award, Target,
   Calendar, Briefcase, PieChart as PieChartIcon, Activity,
   BarChart3, AlertCircle, CheckCircle, Clock, Package, UserPlus, Phone, Zap, TrendingDown as TrendingDownIcon,
-  TrendingUpIcon, ArrowUpRight, ArrowDownRight, BadgeDollarSign, Percent, Timer
+  TrendingUpIcon, ArrowUpRight, ArrowDownRight, BadgeDollarSign, Percent, Timer, TrendingUp as TrendingUpAlt, Crosshair
 } from 'lucide-react';
 
 const SalesCompensationDashboardPro = () => {
@@ -3215,6 +3215,620 @@ const SalesRepSimulator = () => {
     );
   };
 
+  // Break-Even Analysis Tab
+  const BreakEvenAnalysis = () => {
+    // Calculate break-even metrics
+    const netMargin = useMemo(() => gm - r - h, [gm, r, h]);
+
+    // Break-even conversion rate: cBreakEven = (L * pL + B + M) / (netMargin * L * V)
+    const cBreakEven = useMemo(() => {
+      if (netMargin <= 0 || L === 0 || V === 0) return 0;
+      return (L * pL + B + M) / (netMargin * L * V);
+    }, [L, pL, B, M, netMargin, V]);
+
+    // Break-even leads: LBreakEven = (B + M) / (netMargin * c * V - pL)
+    const LBreakEven = useMemo(() => {
+      const denominator = netMargin * c * V - pL;
+      if (denominator <= 0) return Infinity;
+      return (B + M) / denominator;
+    }, [B, M, netMargin, c, V, pL]);
+
+    // Current position
+    const currentRevenue = useMemo(() => N * V, [N, V]);
+    const currentTotalCosts = useMemo(() =>
+      pL * L + C_variable + totalOperatingExpenses + M,
+      [pL, L, C_variable, totalOperatingExpenses, M]
+    );
+    const currentProfit = useMemo(() =>
+      currentRevenue * gm - currentTotalCosts,
+      [currentRevenue, gm, currentTotalCosts]
+    );
+
+    // Break-even revenue
+    const breakEvenRevenue = useMemo(() =>
+      currentTotalCosts / gm,
+      [currentTotalCosts, gm]
+    );
+
+    // Gap analysis
+    const conversionGap = useMemo(() =>
+      Math.max(0, cBreakEven - c),
+      [cBreakEven, c]
+    );
+    const leadsGap = useMemo(() =>
+      Math.max(0, LBreakEven - L),
+      [LBreakEven, L]
+    );
+    const revenueGap = useMemo(() =>
+      Math.max(0, breakEvenRevenue - currentRevenue),
+      [breakEvenRevenue, currentRevenue]
+    );
+
+    // Status
+    const isBreakEven = currentProfit >= 0;
+    const profitMarginPct = useMemo(() =>
+      currentRevenue > 0 ? (currentProfit / currentRevenue) * 100 : 0,
+      [currentProfit, currentRevenue]
+    );
+
+    // Chart data for break-even visualization
+    const breakEvenChartData = useMemo(() => {
+      const data = [];
+      const maxLeads = Math.max(L * 2, LBreakEven * 1.5);
+      const step = maxLeads / 20;
+
+      for (let leads = 0; leads <= maxLeads; leads += step) {
+        const contracts = leads * c;
+        const revenue = contracts * V * gm;
+        const costs = pL * leads + contracts * V * r + totalOperatingExpenses + M;
+
+        data.push({
+          leads: Math.round(leads),
+          revenue: revenue,
+          costs: costs,
+          profit: revenue - costs
+        });
+      }
+      return data;
+    }, [L, LBreakEven, c, V, gm, pL, r, totalOperatingExpenses, M]);
+
+    // Sensitivity analysis data
+    const sensitivityData = useMemo(() => {
+      const variations = [-20, -10, 0, 10, 20];
+
+      return {
+        costPerLead: variations.map(pct => {
+          const newPL = pL * (1 + pct / 100);
+          const newLBreakEven = (B + M) / (netMargin * c * V - newPL);
+          return {
+            change: `${pct > 0 ? '+' : ''}${pct}%`,
+            value: newPL.toFixed(2),
+            breakEvenLeads: Math.ceil(newLBreakEven),
+            impact: newLBreakEven - LBreakEven
+          };
+        }),
+        commissionRate: variations.map(pct => {
+          const newR = r * (1 + pct / 100);
+          const newNetMargin = gm - newR - h;
+          const newLBreakEven = (B + M) / (newNetMargin * c * V - pL);
+          return {
+            change: `${pct > 0 ? '+' : ''}${pct}%`,
+            value: `${(newR * 100).toFixed(2)}%`,
+            breakEvenLeads: Math.ceil(newLBreakEven),
+            impact: newLBreakEven - LBreakEven
+          };
+        }),
+        operatingExpenses: variations.map(pct => {
+          const newOpEx = totalOperatingExpenses * (1 + pct / 100);
+          const newLBreakEven = (B + newOpEx) / (netMargin * c * V - pL);
+          return {
+            change: `${pct > 0 ? '+' : ''}${pct}%`,
+            value: formatCurrency(newOpEx),
+            breakEvenLeads: Math.ceil(newLBreakEven),
+            impact: newLBreakEven - LBreakEven
+          };
+        })
+      };
+    }, [pL, r, h, gm, totalOperatingExpenses, B, M, netMargin, c, V, LBreakEven]);
+
+    // Action items
+    const actionItems = useMemo(() => {
+      const actions = [];
+
+      if (!isBreakEven) {
+        // Priority 1: Increase leads
+        if (leadsGap > 0) {
+          actions.push({
+            priority: 1,
+            category: 'Lead Generation',
+            action: `Increase monthly leads by ${Math.ceil(leadsGap)}`,
+            impact: 'High',
+            target: `${Math.ceil(LBreakEven)} leads/month`,
+            difficulty: leadsGap > 20 ? 'Hard' : leadsGap > 10 ? 'Medium' : 'Easy'
+          });
+        }
+
+        // Priority 2: Improve conversion
+        if (c < cBreakEven) {
+          const targetC = Math.min(cBreakEven * 1.1, 0.5);
+          actions.push({
+            priority: 2,
+            category: 'Conversion Rate',
+            action: `Improve conversion rate to ${(targetC * 100).toFixed(2)}%`,
+            impact: 'High',
+            target: `+${((targetC - c) * 100).toFixed(2)}% improvement`,
+            difficulty: conversionGap > 0.05 ? 'Hard' : 'Medium'
+          });
+        }
+
+        // Priority 3: Reduce cost per lead
+        const targetPL = pL * 0.85;
+        const plImpact = (pL - targetPL) * L;
+        actions.push({
+          priority: 3,
+          category: 'Cost Reduction',
+          action: `Reduce cost per lead by 15%`,
+          impact: 'Medium',
+          target: `${formatCurrency(targetPL)} per lead`,
+          difficulty: 'Medium',
+          monthlySavings: formatCurrency(plImpact)
+        });
+
+        // Priority 4: Reduce operating expenses
+        if (totalOperatingExpenses > 30000) {
+          const targetOpEx = totalOperatingExpenses * 0.90;
+          actions.push({
+            priority: 4,
+            category: 'Operating Efficiency',
+            action: 'Reduce operating expenses by 10%',
+            impact: 'Medium',
+            target: formatCurrency(targetOpEx),
+            difficulty: 'Medium',
+            monthlySavings: formatCurrency(totalOperatingExpenses - targetOpEx)
+          });
+        }
+
+        // Priority 5: Increase average ticket
+        const targetV = V * 1.1;
+        actions.push({
+          priority: 5,
+          category: 'Revenue Growth',
+          action: 'Increase average ticket by 10%',
+          impact: 'High',
+          target: formatCurrency(targetV),
+          difficulty: 'Hard'
+        });
+      } else {
+        // Already profitable - focus on growth
+        actions.push({
+          priority: 1,
+          category: 'Growth',
+          action: 'Scale lead generation to maximize profit',
+          impact: 'High',
+          target: `${Math.ceil(L * 1.5)} leads/month`,
+          difficulty: 'Medium'
+        });
+
+        actions.push({
+          priority: 2,
+          category: 'Optimization',
+          action: 'Optimize profit margin through efficiency',
+          impact: 'Medium',
+          target: `${(profitMarginPct * 1.2).toFixed(1)}% profit margin`,
+          difficulty: 'Medium'
+        });
+      }
+
+      return actions.sort((a, b) => a.priority - b.priority);
+    }, [isBreakEven, leadsGap, LBreakEven, c, cBreakEven, conversionGap, pL, L,
+        totalOperatingExpenses, V, profitMarginPct]);
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg p-8 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Break-Even Analysis</h2>
+              <p className="text-blue-100">
+                Comprehensive analysis of your break-even point and profitability
+              </p>
+            </div>
+            <Crosshair className="w-16 h-16 opacity-50" />
+          </div>
+        </div>
+
+        {/* Status Banner */}
+        <div className={`rounded-xl shadow-lg p-6 ${
+          isBreakEven
+            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200'
+            : 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {isBreakEven ? (
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              ) : (
+                <AlertCircle className="w-12 h-12 text-orange-600" />
+              )}
+              <div>
+                <h3 className={`text-2xl font-bold ${isBreakEven ? 'text-green-800' : 'text-orange-800'}`}>
+                  {isBreakEven ? 'Above Break-Even' : 'Below Break-Even'}
+                </h3>
+                <p className={`text-lg ${isBreakEven ? 'text-green-600' : 'text-orange-600'}`}>
+                  {isBreakEven
+                    ? `Profitable with ${profitMarginPct.toFixed(1)}% margin`
+                    : `Need ${revenueGap > 0 ? formatCurrency(revenueGap) : '0'} more revenue to break even`
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Current Monthly Profit</p>
+              <p className={`text-3xl font-bold ${currentProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(Math.abs(currentProfit))}
+                {currentProfit < 0 && ' loss'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Break-Even Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Break-Even Conversion Rate"
+            value={`${(cBreakEven * 100).toFixed(2)}%`}
+            icon={Percent}
+            color={c >= cBreakEven ? 'green' : 'orange'}
+            subtitle={c >= cBreakEven
+              ? `Current: ${(c * 100).toFixed(2)}% ✓`
+              : `Current: ${(c * 100).toFixed(2)}% (need +${(conversionGap * 100).toFixed(2)}%)`
+            }
+          />
+
+          <MetricCard
+            title="Break-Even Leads Required"
+            value={Math.ceil(LBreakEven)}
+            icon={Users}
+            color={L >= LBreakEven ? 'green' : 'orange'}
+            subtitle={L >= LBreakEven
+              ? `Current: ${L} leads ✓`
+              : `Current: ${L} leads (need +${Math.ceil(leadsGap)})`
+            }
+          />
+
+          <MetricCard
+            title="Break-Even Revenue"
+            value={formatCurrency(breakEvenRevenue)}
+            icon={DollarSign}
+            color={currentRevenue >= breakEvenRevenue ? 'green' : 'orange'}
+            subtitle={`Current: ${formatCurrency(currentRevenue)}`}
+          />
+
+          <MetricCard
+            title="Net Margin"
+            value={`${(netMargin * 100).toFixed(2)}%`}
+            icon={Activity}
+            color="purple"
+            subtitle={`After ${(r * 100).toFixed(1)}% commission & ${(h * 100).toFixed(1)}% overhead`}
+          />
+        </div>
+
+        {/* Break-Even Chart */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-bold mb-4 text-gray-800">Break-Even Visualization</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Revenue vs. Costs - Intersection point shows break-even
+          </p>
+
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart data={breakEvenChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="leads"
+                label={{ value: 'Monthly Leads', position: 'insideBottom', offset: -5 }}
+              />
+              <YAxis
+                label={{ value: 'Amount ($)', angle: -90, position: 'insideLeft' }}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip
+                formatter={(value) => formatCurrency(value)}
+                labelFormatter={(label) => `${label} leads`}
+              />
+              <Legend />
+
+              {/* Revenue line */}
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#10b981"
+                strokeWidth={3}
+                name="Revenue (Gross Margin)"
+                dot={false}
+              />
+
+              {/* Costs line */}
+              <Line
+                type="monotone"
+                dataKey="costs"
+                stroke="#ef4444"
+                strokeWidth={3}
+                name="Total Costs"
+                dot={false}
+              />
+
+              {/* Profit area */}
+              <Area
+                type="monotone"
+                dataKey="profit"
+                fill="#10b981"
+                fillOpacity={0.2}
+                stroke="none"
+                name="Profit/Loss"
+              />
+
+              {/* Current position marker */}
+              <Line
+                type="monotone"
+                dataKey="leads"
+                stroke="transparent"
+                strokeWidth={0}
+                dot={(props) => {
+                  if (Math.abs(props.payload.leads - L) < 5) {
+                    return (
+                      <circle
+                        cx={props.cx}
+                        cy={props.cy}
+                        r={8}
+                        fill="#3b82f6"
+                        stroke="#1e40af"
+                        strokeWidth={2}
+                      />
+                    );
+                  }
+                  return null;
+                }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-4 h-4 bg-green-500 rounded"></div>
+                <span className="font-semibold text-green-800">Profit Zone</span>
+              </div>
+              <p className="text-sm text-green-700">Above {Math.ceil(LBreakEven)} leads/month</p>
+            </div>
+
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <span className="font-semibold text-blue-800">Current Position</span>
+              </div>
+              <p className="text-sm text-blue-700">{L} leads/month</p>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="w-4 h-4 bg-red-500 rounded"></div>
+                <span className="font-semibold text-red-800">Loss Zone</span>
+              </div>
+              <p className="text-sm text-red-700">Below {Math.ceil(LBreakEven)} leads/month</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Sensitivity Analysis */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-bold mb-4 text-gray-800">Sensitivity Analysis</h3>
+          <p className="text-sm text-gray-600 mb-6">
+            How break-even point changes with different parameters
+          </p>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Cost Per Lead Sensitivity */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-700 flex items-center">
+                <BadgeDollarSign className="w-5 h-5 mr-2 text-blue-600" />
+                Cost Per Lead Impact
+              </h4>
+              <div className="space-y-2">
+                {sensitivityData.costPerLead.map((item, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded p-3 text-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium text-gray-700">{item.change}</span>
+                      <span className="text-blue-600">${item.value}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Break-even leads:</span>
+                      <span className={`font-semibold ${
+                        item.impact > 0 ? 'text-red-600' : item.impact < 0 ? 'text-green-600' : 'text-gray-600'
+                      }`}>
+                        {item.breakEvenLeads}
+                        {item.impact !== 0 && ` (${item.impact > 0 ? '+' : ''}${Math.round(item.impact)})`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Commission Rate Sensitivity */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-700 flex items-center">
+                <Percent className="w-5 h-5 mr-2 text-purple-600" />
+                Commission Rate Impact
+              </h4>
+              <div className="space-y-2">
+                {sensitivityData.commissionRate.map((item, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded p-3 text-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium text-gray-700">{item.change}</span>
+                      <span className="text-purple-600">{item.value}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Break-even leads:</span>
+                      <span className={`font-semibold ${
+                        item.impact > 0 ? 'text-red-600' : item.impact < 0 ? 'text-green-600' : 'text-gray-600'
+                      }`}>
+                        {item.breakEvenLeads}
+                        {item.impact !== 0 && ` (${item.impact > 0 ? '+' : ''}${Math.round(item.impact)})`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Operating Expenses Sensitivity */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-700 flex items-center">
+                <Activity className="w-5 h-5 mr-2 text-orange-600" />
+                Operating Expenses Impact
+              </h4>
+              <div className="space-y-2">
+                {sensitivityData.operatingExpenses.map((item, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded p-3 text-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-medium text-gray-700">{item.change}</span>
+                      <span className="text-orange-600 text-xs">{item.value}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Break-even leads:</span>
+                      <span className={`font-semibold ${
+                        item.impact > 0 ? 'text-red-600' : item.impact < 0 ? 'text-green-600' : 'text-gray-600'
+                      }`}>
+                        {item.breakEvenLeads}
+                        {item.impact !== 0 && ` (${item.impact > 0 ? '+' : ''}${Math.round(item.impact)})`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Items */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+            <Target className="w-6 h-6 mr-2 text-blue-600" />
+            Recommended Actions to {isBreakEven ? 'Maximize Profit' : 'Reach Break-Even'}
+          </h3>
+
+          <div className="space-y-4">
+            {actionItems.map((action, idx) => (
+              <div
+                key={idx}
+                className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 border-l-4 border-blue-500 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <span className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-sm">
+                        {action.priority}
+                      </span>
+                      <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                        {action.category}
+                      </span>
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        action.impact === 'High'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {action.impact} Impact
+                      </span>
+                      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                        action.difficulty === 'Easy'
+                          ? 'bg-green-100 text-green-700'
+                          : action.difficulty === 'Medium'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {action.difficulty}
+                      </span>
+                    </div>
+
+                    <h4 className="font-semibold text-gray-800 text-lg mb-1">
+                      {action.action}
+                    </h4>
+
+                    <div className="flex items-center space-x-6 text-sm text-gray-600">
+                      <div>
+                        <span className="font-medium">Target: </span>
+                        <span className="text-blue-600 font-semibold">{action.target}</span>
+                      </div>
+                      {action.monthlySavings && (
+                        <div>
+                          <span className="font-medium">Monthly Savings: </span>
+                          <span className="text-green-600 font-semibold">{action.monthlySavings}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Formula Reference */}
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl shadow-lg p-6 border border-blue-200">
+          <h3 className="text-xl font-bold mb-4 text-gray-800">Break-Even Formulas Reference</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-semibold text-blue-800 mb-2">Break-Even Conversion Rate</h4>
+              <code className="text-sm text-gray-700 block bg-gray-50 p-3 rounded">
+                cBreakEven = (L × pL + B + M) / (netMargin × L × V)
+              </code>
+              <p className="text-xs text-gray-600 mt-2">
+                Minimum conversion rate needed to cover all costs
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-semibold text-purple-800 mb-2">Break-Even Leads Required</h4>
+              <code className="text-sm text-gray-700 block bg-gray-50 p-3 rounded">
+                LBreakEven = (B + M) / (netMargin × c × V - pL)
+              </code>
+              <p className="text-xs text-gray-600 mt-2">
+                Minimum leads needed to cover fixed costs
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-semibold text-green-800 mb-2">Net Margin</h4>
+              <code className="text-sm text-gray-700 block bg-gray-50 p-3 rounded">
+                netMargin = gm - r - h
+              </code>
+              <p className="text-xs text-gray-600 mt-2">
+                Gross margin minus commission and overhead rates
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4">
+              <h4 className="font-semibold text-orange-800 mb-2">Variables</h4>
+              <div className="text-xs text-gray-700 space-y-1">
+                <p><strong>L:</strong> Monthly Leads ({L})</p>
+                <p><strong>pL:</strong> Cost per Lead (${pL})</p>
+                <p><strong>c:</strong> Conversion Rate ({(c * 100).toFixed(2)}%)</p>
+                <p><strong>V:</strong> Average Ticket ({formatCurrency(V)})</p>
+                <p><strong>r:</strong> Commission Rate ({(r * 100).toFixed(1)}%)</p>
+                <p><strong>gm:</strong> Gross Margin ({(gm * 100).toFixed(1)}%)</p>
+                <p><strong>h:</strong> Variable Overhead ({(h * 100).toFixed(1)}%)</p>
+                <p><strong>M:</strong> Owner Compensation ({formatCurrency(M)})</p>
+                <p><strong>B:</strong> Base Salary ({formatCurrency(B)})</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -3225,6 +3839,7 @@ const SalesRepSimulator = () => {
           <TabButton id="pl" label="P&L Analysis" icon={BarChart3} />
           <TabButton id="simulator" label="Sales Rep Simulator" icon={UserPlus} />
           <TabButton id="leadcost" label="Lead Cost Analysis" icon={BadgeDollarSign} />
+          <TabButton id="breakeven" label="Break-Even Analysis" icon={Crosshair} />
         </div>
 
         {/* Tab Content */}
@@ -3233,6 +3848,7 @@ const SalesRepSimulator = () => {
         {activeTab === 'pl' && <PLAnalysis />}
         {activeTab === 'simulator' && <SalesRepSimulator />}
         {activeTab === 'leadcost' && <LeadCostAnalysis />}
+        {activeTab === 'breakeven' && <BreakEvenAnalysis />}
 
         {/* Footer */}
         <div className="mt-12 text-center text-gray-500 text-sm">
