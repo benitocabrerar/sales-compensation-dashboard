@@ -4,7 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const DATA_DIR = path.join(__dirname, 'data');
 const SCENARIOS_FILE = path.join(DATA_DIR, 'scenarios.json');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
