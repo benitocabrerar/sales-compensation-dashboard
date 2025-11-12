@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Compensation Dashboard Pro - Offline</title>
+
+    <style>
+        /* Tailwind CSS - Core utilities inline */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Utility Classes */
+        .min-h-screen { min-height: 100vh; }
+        .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
+        .from-slate-900 { --tw-gradient-from: #0f172a; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(15 23 42 / 0)); }
+        .via-blue-900 { --tw-gradient-stops: var(--tw-gradient-from), #1e3a8a, var(--tw-gradient-to, rgb(30 58 138 / 0)); }
+        .to-slate-900 { --tw-gradient-to: #0f172a; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .mr-4 { margin-right: 1rem; }
+        .max-w-\[1600px\] { max-width: 1600px; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); }
+        .bg-white { background-color: #ffffff; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-red-50 { background-color: #fef2f2; }
+        .bg-yellow-50 { background-color: #fefce8; }
+        .text-white { color: #ffffff; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-green-600 { color: #16a34a; }
+        .text-green-700 { color: #15803d; }
+        .text-red-600 { color: #dc2626; }
+        .text-red-700 { color: #b91c1c; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .hidden { display: none; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .w-full { width: 100%; }
+        .border-2 { border-width: 2px; }
+        .border-gray-300 { border-color: #d1d5db; }
+        .border-blue-200 { border-color: #bfdbfe; }
+        .border-green-200 { border-color: #bbf7d0; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .cursor-pointer { cursor: pointer; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .hover\:bg-gray-200:hover { background-color: #e5e7eb; }
+        .hover\:scale-105:hover { transform: scale(1.05); }
+        .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+        .focus\:border-blue-500:focus { border-color: #3b82f6; }
+
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 1280px) {
+            .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .xl\:col-span-1 { grid-column: span 1 / span 1; }
+            .xl\:col-span-3 { grid-column: span 3 / span 3; }
+            .xl\:block { display: block; }
+        }
+
+        /* Slider Styles */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 0.75rem;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Gradient Backgrounds */
+        .bg-gradient-to-r {
+            background-image: linear-gradient(to right, var(--tw-gradient-stops));
+        }
+
+        .from-blue-600 {
+            --tw-gradient-from: #2563eb;
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgb(37 99 235 / 0));
+        }
+
+        .via-purple-600 {
+            --tw-gradient-stops: var(--tw-gradient-from), #9333ea, var(--tw-gradient-to, rgb(147 51 234 / 0));
+        }
+
+        .to-pink-600 {
+            --tw-gradient-to: #db2777;
+        }
+
+        /* Card Gradients */
+        .from-blue-50 { --tw-gradient-from: #eff6ff; }
+        .to-blue-100 { --tw-gradient-to: #dbeafe; }
+        .from-green-50 { --tw-gradient-from: #f0fdf4; }
+        .to-green-100 { --tw-gradient-to: #dcfce7; }
+        .from-purple-50 { --tw-gradient-from: #faf5ff; }
+        .to-purple-100 { --tw-gradient-to: #f3e8ff; }
+        .from-red-50 { --tw-gradient-from: #fef2f2; }
+        .to-red-100 { --tw-gradient-to: #fee2e2; }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tab Styles */
+        .tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.15s;
+            cursor: pointer;
+            border: none;
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .tab:hover {
+            background-color: #e5e7eb;
+        }
+
+        .tab.active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        /* Input Styles */
+        input[type="text"], input[type="number"] {
+            padding: 0.75rem 1rem;
+            border: 2px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            width: 100%;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: linear-gradient(to right, #dbeafe, #dcfce7);
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            max-width: 48rem;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Metric Card */
+        .metric-card {
+            border-radius: 0.75rem;
+            padding: 1rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            border: 2px solid;
+            transform: scale(1);
+            transition: transform 0.15s;
+        }
+
+        .metric-card:hover {
+            transform: scale(1.05);
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+
+        .divide-y > * + * {
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .opacity-90 { opacity: 0.9; }
+        .opacity-75 { opacity: 0.75; }
+
+        /* Simplified Chart Placeholder */
+        .chart-placeholder {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.125rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // Simple React-like implementation for offline use
+        class SalesCompensationDashboard {
+            constructor() {
+                this.state = {
+                    salespersonName: '',
+                    L: 25,
+                    pL: 80,
+                    c: 0.15,
+                    V: 12000,
+                    r: 0.0075,
+                    B: 150,
+                    b: 2000,
+                    gm: 0.33,
+                    h: 0.10,
+                    M: 1000,
+                    alpha: 0.11,
+                    growthRate: 0.05,
+                    discountRate: 0.10,
+                    years: 3,
+                    activeTab: 'dashboard',
+                    scenarios: [],
+                    showAlertModal: false,
+                    showScenarioModal: false
+                };
+
+                this.loadFromStorage();
+                this.render();
+                this.attachEventListeners();
+            }
+
+            loadFromStorage() {
+                const saved = localStorage.getItem('salesDashboardConfig');
+                if (saved) {
+                    const config = JSON.parse(saved);
+                    Object.assign(this.state, config);
+                }
+
+                const savedScenarios = localStorage.getItem('salesDashboardScenarios');
+                if (savedScenarios) {
+                    this.state.scenarios = JSON.parse(savedScenarios);
+                }
+            }
+
+            saveToStorage() {
+                const config = {
+                    salespersonName: this.state.salespersonName,
+                    L: this.state.L,
+                    pL: this.state.pL,
+                    c: this.state.c,
+                    V: this.state.V,
+                    r: this.state.r,
+                    B: this.state.B,
+                    b: this.state.b,
+                    gm: this.state.gm,
+                    h: this.state.h,
+                    M: this.state.M,
+                    alpha: this.state.alpha,
+                    growthRate: this.state.growthRate,
+                    discountRate: this.state.discountRate,
+                    years: this.state.years
+                };
+                localStorage.setItem('salesDashboardConfig', JSON.stringify(config));
+            }
+
+            calculate() {
+                const { L, pL, c, V, r, B, b, gm, h, M, alpha } = this.state;
+
+                const R = L * c * V;
+                const G = gm * R;
+                const leadPayment = L * pL;
+                const commission = r * R;
+                const totalEarned = leadPayment + commission + B;
+                const cashPayment = Math.max(b, totalEarned);
+                const recoverableBase = totalEarned < b ? b - totalEarned : 0;
+                const variableOverhead = h * R;
+                const netProfit = G - totalEarned - variableOverhead - M;
+
+                const cMinBase = (b - (L * pL + B)) / (r * L * V);
+                const LMinBase = (b - B) / (pL + r * c * V);
+                const meetsBase = c >= cMinBase && L >= LMinBase;
+                const cMinCap = (L * pL + B) / ((alpha * gm - r) * L * V);
+                const meetsCap = totalEarned <= alpha * G;
+
+                const netMargin = gm - r - h;
+                const cBreakEven = (L * pL + B + M) / (netMargin * L * V);
+                const LBreakEven = (B + M) / (netMargin * c * V - pL);
+
+                const salespersonAnnual = totalEarned * 12;
+                const companyAnnual = netProfit * 12;
+                const annualSales = R * 12;
+                const annualMargin = G * 12;
+
+                const salespersonPctMargin = (totalEarned / G) * 100;
+                const profitPctMargin = (netProfit / G) * 100;
+                const salespersonPctSales = (totalEarned / R) * 100;
+                const monthlyROI = (netProfit / totalEarned) * 100;
+
+                return {
+                    R, G, leadPayment, commission, totalEarned, cashPayment, recoverableBase,
+                    variableOverhead, netProfit, cMinBase, LMinBase, meetsBase, cMinCap,
+                    meetsCap, netMargin, cBreakEven, LBreakEven, salespersonAnnual, companyAnnual,
+                    annualSales, annualMargin, salespersonPctMargin, profitPctMargin, salespersonPctSales,
+                    monthlyROI
+                };
+            }
+
+            getAlerts() {
+                const calc = this.calculate();
+                const alerts = [];
+
+                if (!calc.meetsBase) {
+                    alerts.push({
+                        type: 'warning',
+                        title: 'Base Coverage Alert',
+                        message: `Variable components do not cover base salary. Recoverable: $${calc.recoverableBase.toFixed(0)}`
+                    });
+                }
+
+                if (!calc.meetsCap) {
+                    alerts.push({
+                        type: 'danger',
+                        title: 'Payout Cap Exceeded',
+                        message: `Total payout (${calc.salespersonPctMargin.toFixed(1)}%) exceeds ${(this.state.alpha*100).toFixed(0)}% margin cap`
+                    });
+                }
+
+                if (calc.netProfit < 0) {
+                    alerts.push({
+                        type: 'danger',
+                        title: 'Negative Profitability',
+                        message: `Company is losing $${Math.abs(calc.netProfit).toFixed(0)} per month`
+                    });
+                }
+
+                if (calc.monthlyROI < 50) {
+                    alerts.push({
+                        type: 'warning',
+                        title: 'Low ROI Warning',
+                        message: `Monthly ROI is ${calc.monthlyROI.toFixed(1)}%. Target: >50%`
+                    });
+                }
+
+                return alerts;
+            }
+
+            updateState(key, value) {
+                this.state[key] = value;
+                this.saveToStorage();
+                this.render();
+            }
+
+            exportToCSV() {
+                const calc = this.calculate();
+                const name = this.state.salespersonName || 'export';
+                const date = new Date().toISOString().split('T')[0];
+
+                const csv = `Metric,Value
+Salesperson Name,${this.state.salespersonName || 'Not Set'}
+Monthly Sales,${calc.R.toFixed(0)}
+Gross Margin,${calc.G.toFixed(0)}
+Salesperson Total,${calc.totalEarned.toFixed(0)}
+Company Net Profit,${calc.netProfit.toFixed(0)}
+Monthly ROI,${calc.monthlyROI.toFixed(2)}%
+Annual Sales,${calc.annualSales.toFixed(0)}
+Annual Salesperson Comp,${calc.salespersonAnnual.toFixed(0)}
+Annual Company Profit,${calc.companyAnnual.toFixed(0)}`;
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sales-analysis-${name}-${date}.csv`;
+                a.click();
+            }
+
+            saveScenario() {
+                const name = prompt('Enter scenario name:');
+                if (!name) return;
+
+                const scenario = {
+                    id: Date.now(),
+                    name: name,
+                    timestamp: new Date().toISOString(),
+                    config: { ...this.state },
+                    results: this.calculate()
+                };
+
+                this.state.scenarios.push(scenario);
+                localStorage.setItem('salesDashboardScenarios', JSON.stringify(this.state.scenarios));
+                alert('Scenario saved successfully!');
+                this.render();
+            }
+
+            render() {
+                const calc = this.calculate();
+                const alerts = this.getAlerts();
+
+                document.getElementById('root').innerHTML = `
+                    <div class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4">
+                        <div class="max-w-[1600px] mx-auto">
+                            <!-- Header -->
+                            <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-8 mb-6 text-white">
+                                <div class="flex items-center justify-between flex-wrap gap-4">
+                                    <div>
+                                        <h1 class="text-4xl font-bold mb-2 flex items-center">
+                                            <span class="mr-4">🚀</span>
+                                            SALES COMPENSATION ANALYZER PRO
+                                        </h1>
+                                        <p class="text-xl opacity-90">GA Castro Construction LLC | Offline Edition</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="dashboard.updateState('showAlertModal', true)" class="btn btn-secondary">
+                                            🔔 Alerts (${alerts.length})
+                                        </button>
+                                        <button onclick="dashboard.exportToCSV()" class="btn btn-secondary">
+                                            📥 Export
+                                        </button>
+                                        <button onclick="dashboard.saveScenario()" class="btn btn-secondary">
+                                            💾 Save
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex gap-4 text-sm flex-wrap">
+                                    <div class="bg-white/20 rounded-lg px-4 py-2">
+                                        <span class="opacity-75">Salesperson:</span>
+                                        <span class="font-bold">${this.state.salespersonName || 'Not Set'}</span>
+                                    </div>
+                                    <div class="bg-white/20 rounded-lg px-4 py-2">
+                                        <span class="opacity-75">Status:</span>
+                                        <span class="font-bold">${calc.netProfit >= 0 ? '🟢 Profitable' : '🔴 Loss'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Salesperson Name Input -->
+                            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Salesperson Name</label>
+                                <input type="text" id="salespersonName" value="${this.state.salespersonName}"
+                                    placeholder="Enter salesperson name..."
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg">
+                            </div>
+
+                            <!-- Navigation Tabs -->
+                            <div class="bg-white rounded-xl shadow-lg p-2 mb-6 flex gap-2 flex-wrap">
+                                <button onclick="dashboard.updateState('activeTab', 'dashboard')"
+                                    class="tab ${this.state.activeTab === 'dashboard' ? 'active' : ''}">
+                                    📊 Dashboard
+                                </button>
+                                <button onclick="dashboard.updateState('activeTab', 'controls')"
+                                    class="tab ${this.state.activeTab === 'controls' ? 'active' : ''}">
+                                    ⚙️ Controls
+                                </button>
+                            </div>
+
+                            ${this.state.activeTab === 'dashboard' ? this.renderDashboard(calc) : ''}
+                            ${this.state.activeTab === 'controls' ? this.renderControls() : ''}
+                        </div>
+                    </div>
+
+                    ${this.state.showAlertModal ? this.renderAlertModal(alerts) : ''}
+                `;
+            }
+
+            renderDashboard(calc) {
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        ${this.renderMetricCard('Monthly Sales', `$${(calc.R/1000).toFixed(1)}k`, `${(this.state.L*this.state.c).toFixed(1)} contracts`, 'purple', '💵')}
+                        ${this.renderMetricCard('Gross Margin', `$${(calc.G/1000).toFixed(1)}k`, `${(this.state.gm*100).toFixed(0)}% margin`, 'blue', '💎')}
+                        ${this.renderMetricCard(`${this.state.salespersonName || 'Salesperson'} Total`, `$${calc.totalEarned.toFixed(0)}`, `${calc.salespersonPctMargin.toFixed(1)}% of margin`, 'green', '👤')}
+                        ${this.renderMetricCard('Net Profit', `$${calc.netProfit.toFixed(0)}`, calc.netProfit >= 0 ? '✅ Profitable' : '❌ Loss', calc.netProfit >= 0 ? 'green' : 'red', '🏆')}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        ${this.renderMetricCard('Annual Sales', `$${(calc.annualSales/1000).toFixed(0)}k`, '12-month projection', 'indigo', '📊')}
+                        ${this.renderMetricCard('Annual Margin', `$${(calc.annualMargin/1000).toFixed(0)}k`, 'Annual margin', 'cyan', '💰')}
+                        ${this.renderMetricCard(`${this.state.salespersonName || 'Salesperson'} Annual`, `$${(calc.salespersonAnnual/1000).toFixed(0)}k`, 'Total compensation', 'emerald', '💼')}
+                        ${this.renderMetricCard('Annual Profit', `$${(calc.companyAnnual/1000).toFixed(0)}k`, 'Net earnings', calc.companyAnnual >= 0 ? 'green' : 'red', '🎯')}
+                    </div>
+
+                    <!-- Validation System -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="mr-2">🚦</span> Validation System
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            ${this.renderValidationCard(calc, 'base')}
+                            ${this.renderValidationCard(calc, 'cap')}
+                            ${this.renderValidationCard(calc, 'profit')}
+                        </div>
+                    </div>
+
+                    <!-- Financial Breakdown -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            📋 Complete Financial Breakdown
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${this.renderFinancialTable(calc, 'salesperson')}
+                            ${this.renderFinancialTable(calc, 'company')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderMetricCard(title, value, subtitle, color, icon) {
+                return `
+                    <div class="metric-card bg-gradient-to-br from-${color}-50 to-${color}-100 border-${color}-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-semibold text-gray-700">${title}</h3>
+                            <span class="text-3xl">${icon}</span>
+                        </div>
+                        <p class="text-3xl font-bold text-${color}-700 mb-1">${value}</p>
+                        <p class="text-xs text-gray-600">${subtitle}</p>
+                    </div>
+                `;
+            }
+
+            renderValidationCard(calc, type) {
+                if (type === 'base') {
+                    const isValid = calc.meetsBase;
+                    return `
+                        <div class="p-5 rounded-xl border-4 ${isValid ? 'bg-green-50 border-green-400' : 'bg-yellow-50 border-yellow-400'}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-bold text-lg">Base Coverage</span>
+                                <span class="text-4xl">${isValid ? '✅' : '⚠️'}</span>
+                            </div>
+                            <p class="text-sm font-semibold mb-2">
+                                ${isValid ? 'Components > Base' : 'Recoverable Base'}
+                            </p>
+                            ${!isValid ? `
+                                <div class="bg-white rounded-lg p-3 mt-2">
+                                    <p class="text-xs text-gray-600">Monthly deficit:</p>
+                                    <p class="text-lg font-bold text-red-600">$${calc.recoverableBase.toFixed(0)}</p>
+                                </div>
+                            ` : ''}
+                            <div class="mt-3 text-xs">
+                                <p class="text-gray-600">Min conversion: <span class="font-bold">${(calc.cMinBase*100).toFixed(1)}%</span></p>
+                                <p class="text-gray-600">Min leads: <span class="font-bold">${calc.LMinBase.toFixed(0)}</span></p>
+                            </div>
+                        </div>
+                    `;
+                } else if (type === 'cap') {
+                    const isValid = calc.meetsCap;
+                    return `
+                        <div class="p-5 rounded-xl border-4 ${isValid ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-bold text-lg">Cap ${(this.state.alpha*100).toFixed(0)}%</span>
+                                <span class="text-4xl">${isValid ? '✅' : '❌'}</span>
+                            </div>
+                            <p class="text-sm font-semibold mb-2">
+                                Payout: ${calc.salespersonPctMargin.toFixed(1)}% margin
+                            </p>
+                            <div class="bg-white rounded-lg p-3 mt-2">
+                                <p class="text-xs text-gray-600">Allowed limit:</p>
+                                <p class="text-lg font-bold text-blue-600">$${(this.state.alpha*calc.G).toFixed(0)}</p>
+                            </div>
+                            <div class="mt-3 text-xs">
+                                <p class="text-gray-600">Min conversion: <span class="font-bold">${(calc.cMinCap*100).toFixed(1)}%</span></p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const isValid = calc.netProfit >= 0;
+                    return `
+                        <div class="p-5 rounded-xl border-4 ${isValid ? 'bg-green-50 border-green-400' : 'bg-red-50 border-red-400'}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-bold text-lg">Profitability</span>
+                                <span class="text-4xl">${isValid ? '✅' : '❌'}</span>
+                            </div>
+                            <p class="text-sm font-semibold mb-2">
+                                ${isValid ? 'Company profitable' : 'Operating at loss'}
+                            </p>
+                            <div class="bg-white rounded-lg p-3 mt-2">
+                                <p class="text-xs text-gray-600">Monthly ROI:</p>
+                                <p class="text-lg font-bold ${calc.monthlyROI >= 0 ? 'text-green-600' : 'text-red-600'}">
+                                    ${calc.monthlyROI.toFixed(1)}%
+                                </p>
+                            </div>
+                            <div class="mt-3 text-xs">
+                                <p class="text-gray-600">Break-even conv: <span class="font-bold">${(calc.cBreakEven*100).toFixed(1)}%</span></p>
+                                <p class="text-gray-600">Break-even leads: <span class="font-bold">${calc.LBreakEven.toFixed(0)}</span></p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            renderFinancialTable(calc, type) {
+                if (type === 'salesperson') {
+                    return `
+                        <div class="border-2 border-blue-200 rounded-lg p-4">
+                            <h4 class="text-lg font-bold text-blue-700 mb-3 pb-2 border-b-2 border-blue-200">
+                                👤 ${this.state.salespersonName || 'SALESPERSON'}
+                            </h4>
+                            <table class="w-full text-sm">
+                                <tbody class="divide-y">
+                                    <tr><td class="py-2 text-gray-600">Leads worked</td><td class="py-2 text-right font-semibold">${this.state.L} leads</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Lead payment</td><td class="py-2 text-right font-semibold">$${calc.leadPayment.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Contracts closed</td><td class="py-2 text-right font-semibold">${(this.state.L*this.state.c).toFixed(1)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Sales commission</td><td class="py-2 text-right font-semibold">$${calc.commission.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Monthly bonus</td><td class="py-2 text-right font-semibold">$${this.state.B.toFixed(0)}</td></tr>
+                                    <tr class="bg-blue-50"><td class="py-2 font-bold">TOTAL EARNED</td><td class="py-2 text-right font-bold text-blue-700">$${calc.totalEarned.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Minimum base</td><td class="py-2 text-right font-semibold">$${this.state.b.toFixed(0)}</td></tr>
+                                    <tr class="bg-green-50"><td class="py-2 font-bold">CASH PAYMENT</td><td class="py-2 text-right font-bold text-green-700">$${calc.cashPayment.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-red-600">Recoverable base</td><td class="py-2 text-right font-semibold text-red-600">$${calc.recoverableBase.toFixed(0)}</td></tr>
+                                    <tr class="bg-blue-100"><td class="py-3 font-bold text-lg">ANNUAL INCOME</td><td class="py-3 text-right font-bold text-blue-800 text-xl">$${(calc.salespersonAnnual/1000).toFixed(1)}k</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="border-2 border-green-200 rounded-lg p-4">
+                            <h4 class="text-lg font-bold text-green-700 mb-3 pb-2 border-b-2 border-green-200">
+                                🏢 COMPANY
+                            </h4>
+                            <table class="w-full text-sm">
+                                <tbody class="divide-y">
+                                    <tr><td class="py-2 text-gray-600">Total sales</td><td class="py-2 text-right font-semibold">$${(calc.R/1000).toFixed(1)}k</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Gross margin (${(this.state.gm*100).toFixed(0)}%)</td><td class="py-2 text-right font-semibold">$${(calc.G/1000).toFixed(1)}k</td></tr>
+                                    <tr class="bg-gray-50"><td class="py-2 text-gray-700">OPERATING COSTS:</td><td class="py-2 text-right font-semibold"></td></tr>
+                                    <tr><td class="py-2 text-gray-600 pl-4">- Salesperson payout</td><td class="py-2 text-right text-red-600">-$${calc.totalEarned.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600 pl-4">- Overhead (${(this.state.h*100).toFixed(0)}%)</td><td class="py-2 text-right text-red-600">-$${calc.variableOverhead.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600 pl-4">- Fixed marketing</td><td class="py-2 text-right text-red-600">-$${this.state.M.toFixed(0)}</td></tr>
+                                    <tr class="bg-green-50"><td class="py-2 font-bold">NET PROFIT</td><td class="py-2 text-right font-bold ${calc.netProfit >= 0 ? 'text-green-700' : 'text-red-700'}">$${calc.netProfit.toFixed(0)}</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Net margin</td><td class="py-2 text-right font-semibold">${calc.profitPctMargin.toFixed(1)}%</td></tr>
+                                    <tr><td class="py-2 text-gray-600">Monthly ROI</td><td class="py-2 text-right font-semibold">${calc.monthlyROI.toFixed(1)}%</td></tr>
+                                    <tr class="bg-green-100"><td class="py-3 font-bold text-lg">ANNUAL PROFIT</td><td class="py-3 text-right font-bold text-xl ${calc.companyAnnual >= 0 ? 'text-green-800' : 'text-red-800'}">$${(calc.companyAnnual/1000).toFixed(1)}k</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            }
+
+            renderControls() {
+                return `
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b-2 border-blue-200 pb-2">
+                                📊 Sales Variables
+                            </h2>
+                            ${this.renderSlider('L', 'Leads (L)', 5, 100, 1, '', ' leads', 'Monthly qualified leads')}
+                            ${this.renderSlider('c', 'Conversion (c)', 0.05, 0.50, 0.01, '', '', '% closing contracts', true)}
+                            ${this.renderSlider('V', 'Ticket (V)', 5000, 30000, 500, '$', '', 'Average contract value')}
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b-2 border-green-200 pb-2">
+                                💰 Compensation
+                            </h2>
+                            ${this.renderSlider('pL', 'Pay/Lead (p_L)', 20, 200, 10, '$', '', 'USD per lead')}
+                            ${this.renderSlider('r', 'Commission (r)', 0.0025, 0.0200, 0.0005, '', '', '% on sales', true)}
+                            ${this.renderSlider('B', 'Bonus (B)', 0, 1000, 50, '$', '', 'Fixed monthly bonus')}
+                            ${this.renderSlider('b', 'Base (b)', 1000, 5000, 500, '$', '', 'Minimum guarantee')}
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b-2 border-red-200 pb-2">
+                                🏢 Company Costs
+                            </h2>
+                            ${this.renderSlider('gm', 'Margin (g_m)', 0.20, 0.50, 0.01, '', '', 'Gross margin %', true)}
+                            ${this.renderSlider('h', 'Overhead (h)', 0.05, 0.25, 0.01, '', '', '% on sales', true)}
+                            ${this.renderSlider('M', 'Marketing (M)', 500, 5000, 250, '$', '', 'Fixed monthly')}
+                            ${this.renderSlider('alpha', 'Cap (α)', 0.08, 0.15, 0.005, '', '', 'Payout limit', true)}
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b-2 border-purple-200 pb-2">
+                                📈 Projections
+                            </h2>
+                            ${this.renderSlider('growthRate', 'Growth Rate', 0, 0.20, 0.01, '', '', 'Annual rate', true)}
+                            ${this.renderSlider('discountRate', 'Discount Rate', 0.05, 0.20, 0.01, '', '', 'NPV rate', true)}
+                            ${this.renderSlider('years', 'Years', 1, 5, 1, '', ' years', 'Time horizon')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderSlider(key, label, min, max, step, prefix, suffix, info, isPercentage = false) {
+                const value = this.state[key];
+                const displayValue = isPercentage ? (value * 100).toFixed(step < 0.01 ? 2 : 1) : value.toFixed(step < 1 ? 2 : 0);
+                const percentage = ((value - min) / (max - min)) * 100;
+
+                return `
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-semibold text-gray-700">${label}</label>
+                            <span class="text-lg font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
+                                ${prefix}${displayValue}${isPercentage ? '%' : suffix}
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-2">${info}</p>
+                        <input type="range" id="${key}" min="${min}" max="${max}" step="${step}" value="${value}"
+                            class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                            style="background: linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>${prefix}${min}${suffix}</span>
+                            <span>${prefix}${max}${suffix}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderAlertModal(alerts) {
+                return `
+                    <div class="modal">
+                        <div class="modal-content">
+                            <div class="p-6 border-b-2 border-gray-300">
+                                <div class="flex justify-between items-center">
+                                    <h2 class="text-2xl font-bold text-gray-800">🔔 System Alerts (${alerts.length})</h2>
+                                    <button onclick="dashboard.updateState('showAlertModal', false)"
+                                        style="font-size: 2rem; font-weight: bold; color: #6b7280; cursor: pointer; border: none; background: none;">
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                ${alerts.length === 0 ? `
+                                    <div style="text-align: center; padding: 2rem 0;">
+                                        <span style="font-size: 4rem;">✅</span>
+                                        <p class="text-xl font-semibold text-gray-600 mt-4">All systems normal!</p>
+                                        <p class="text-sm text-gray-500">No alerts at this time</p>
+                                    </div>
+                                ` : alerts.map(alert => `
+                                    <div class="p-4 rounded-lg border-2 ${
+                                        alert.type === 'danger' ? 'bg-red-50 border-red-400' : 'bg-yellow-50 border-yellow-400'
+                                    }">
+                                        <div class="flex items-start">
+                                            <span class="text-3xl mr-3">${alert.type === 'danger' ? '🚨' : '⚠️'}</span>
+                                            <div>
+                                                <h3 class="font-bold text-lg mb-1">${alert.title}</h3>
+                                                <p class="text-sm text-gray-700">${alert.message}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            attachEventListeners() {
+                document.addEventListener('input', (e) => {
+                    if (e.target.id === 'salespersonName') {
+                        this.updateState('salespersonName', e.target.value);
+                    } else if (e.target.type === 'range') {
+                        this.updateState(e.target.id, parseFloat(e.target.value));
+                    }
+                });
+            }
+        }
+
+        // Initialize dashboard
+        const dashboard = new SalesCompensationDashboard();
+    </script>
+</body>
+</html>

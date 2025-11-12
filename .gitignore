@@ -1,0 +1,107 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production builds
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Testing
+coverage/
+*.lcov
+.nyc_output
+
+# Python cache (for analysis scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+
+# Data files (will be in database)
+backend/data/*.json
+!backend/data/.gitkeep
+
+# Backup files
+*.backup
+*.bak
+backup/
+
+# Analysis outputs
+*.csv
+!castro_pl_analysis.csv
+*.pdf
+!Accural-ProfitandLossbyMonth*.pdf
+!castro_pl_visual_analysis.pdf
+*.png
+!castro_pl_visual_analysis.png
+*.jpg
+!Imagen*.jpg
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Render specific
+.render/
+
+# Database dumps
+*.sql
+*.dump
+
+# Lock files (keep package-lock.json)
+yarn.lock
+pnpm-lock.yaml
+
+# Misc
+.sass-cache/
+.connect.lock
+.lock-wscriptnul
